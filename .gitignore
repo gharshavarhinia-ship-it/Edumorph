@@ -1,0 +1,13 @@
+# Virtual Environment
+venv311/
+
+# Python Cache
+**/__pycache__/
+*.py[cod]
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Large Model Files (Recommended to ignore due to size)
+models/
