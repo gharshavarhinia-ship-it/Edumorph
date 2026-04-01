@@ -11,3 +11,5 @@ Thumbs.db
 
 # Large Model Files (Recommended to ignore due to size)
 models/
+
+.env

@@ -1,0 +1,91 @@
+{
+  "animation": [
+    {
+      "scene": 1,
+      "narration": "Environmental pollution is the introduction of harmful substances into our air, water, and soil, disrupting the delicate balance of our planet's ecosystems.",
+      "visual": "A split-screen animation showing a lush green forest on one side and a grey, polluted landscape on the other, transitioning as dark particles drift across."
+    },
+    {
+      "scene": 2,
+      "narration": "Air pollution stems from vehicles and factories releasing toxic gases and smoke, leading to serious respiratory diseases like asthma and bronchitis in humans.",
+      "visual": "Animated factory chimneys and car exhausts pumping thick grey smoke into a hazy sky, with an overlay icon of human lungs showing irritation."
+    },
+    {
+      "scene": 3,
+      "narration": "Water pollution occurs when sewage, plastics, and industrial waste contaminate our oceans and rivers, harming aquatic life and making water unsafe for drinking.",
+      "visual": "A cross-section of a river showing plastic bottles and dark sludge flowing downstream, with silhouettes of fish struggling to swim through the debris."
+    },
+    {
+      "scene": 4,
+      "narration": "Soil pollution is caused by excessive pesticides and toxic waste dumping, which reduces land fertility and poses a major threat to global food production.",
+      "visual": "A close-up of a farmer spraying bright yellow chemicals on a cracked, dry field where plants are wilting near a pile of discarded industrial trash."
+    },
+    {
+      "scene": 5,
+      "narration": "With rapid industrialization, pollution has become a critical global problem. Understanding these causes is the first step toward protecting our health and wildlife.",
+      "visual": "A rotating globe surrounded by a ring of pollutants that slowly starts to clear as green leaf icons sprout across the continents, ending with a clean blue sky."
+    }
+  ],
+  "comic": [
+    {
+      "scene": 1,
+      "narration": "Meet Pip! He\u2019s a tiny leaf with a big job: making his own lunch using magic from the sky.",
+      "visual": "A cute, anthropomorphic green leaf named Pip waving from a tree branch under a bright blue sky."
+    },
+    {
+      "scene": 2,
+      "narration": "Deep underground, the tree's roots act like giant straws to suck up water and minerals.",
+      "visual": "A cross-section of the soil showing thick tree roots 'slurping' blue water droplets like a milkshake."
+    },
+    {
+      "scene": 3,
+      "narration": "Pip takes a deep breath, absorbing Carbon Dioxide from the air through tiny pores in his skin.",
+      "visual": "Close-up of Pip with his mouth open, pulling in grey bubbles labeled 'CO2' from the surrounding air."
+    },
+    {
+      "scene": 4,
+      "narration": "But every chef needs a stove! Pip looks up to find his power source: the Sun.",
+      "visual": "Pip wearing cool sunglasses, looking up at a smiling sun shining bright golden rays down on him."
+    },
+    {
+      "scene": 5,
+      "narration": "Pip uses his secret weapon, Chlorophyll, to trap that golden light energy.",
+      "visual": "Pip wearing a sparkly green superhero cape that glows as it catches the sunlight."
+    },
+    {
+      "scene": 6,
+      "narration": "Inside Pip's 'leafy kitchen,' the real magic begins to sizzle.",
+      "visual": "Pip inside a laboratory-style kitchen, mixing a bowl of 'Water' and 'CO2' with a glowing sun-whisk."
+    },
+    {
+      "scene": 7,
+      "narration": "Using the sun's energy, Pip transforms the ingredients into a sweet sugar called Glucose.",
+      "visual": "A magical 'ZAP!' effect showing the mixture turning into sparkling sugar cubes labeled 'Food'."
+    },
+    {
+      "scene": 8,
+      "narration": "This glucose is Pip\u2019s fuel, helping him grow taller and keep the tree strong.",
+      "visual": "Pip eating a sugar cube and instantly flexing huge muscles, looking energetic."
+    },
+    {
+      "scene": 9,
+      "narration": "While cooking, Pip creates a special surprise: fresh Oxygen!",
+      "visual": "Pip blowing beautiful, clear bubbles out into the air labeled with 'O2'."
+    },
+    {
+      "scene": 10,
+      "narration": "He releases this Oxygen so that every animal and human on Earth can breathe.",
+      "visual": "A happy dog and a young girl nearby taking a deep, refreshing breath of the air Pip just cleaned."
+    },
+    {
+      "scene": 11,
+      "narration": "This cycle, called Photosynthesis, keeps the air perfectly balanced for everyone.",
+      "visual": "A circular diagram showing the sun, Pip the leaf, and a human, with arrows connecting them in a loop."
+    },
+    {
+      "scene": 12,
+      "narration": "From the smallest bug to the biggest elephant, Pip\u2019s cooking powers the whole world!",
+      "visual": "A wide shot of a lush forest filled with animals, all surrounding Pip\u2019s tree under a happy sun."
+    }
+  ]
+}

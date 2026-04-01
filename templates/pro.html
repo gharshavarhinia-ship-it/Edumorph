@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edumorph Pro Plans</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: "Inter", sans-serif;
+        background: #141414;
+        color: #f5f5f5;
+        padding: 32px 20px 48px;
+      }
+
+      .page-shell {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .page-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+      }
+
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: #d4d4d8;
+        text-decoration: none;
+        font-weight: 600;
+        padding: 12px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        transition: all 0.25s ease;
+      }
+
+      .back-link:hover {
+        color: #fff;
+        border-color: rgba(124, 58, 237, 0.6);
+        background: rgba(124, 58, 237, 0.14);
+      }
+
+      .page-title-wrap h1 {
+        font-size: clamp(32px, 5vw, 48px);
+        margin-bottom: 8px;
+      }
+
+      .page-title-wrap p {
+        color: #a1a1aa;
+        font-size: 16px;
+        max-width: 720px;
+        line-height: 1.6;
+      }
+
+      .account-strip {
+        margin-top: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .account-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(124, 58, 237, 0.2);
+        color: #ddd6fe;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .account-credits {
+        color: #e4e4e7;
+        font-size: 15px;
+      }
+
+      .account-credits b {
+        color: #fff;
+      }
+
+      .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 28px;
+        margin-top: 28px;
+      }
+
+      .pricing-card {
+        background: #1d1d1d;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 22px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+      }
+
+      .pricing-card.popular {
+        border-color: rgba(124, 58, 237, 0.55);
+        box-shadow: 0 18px 44px rgba(124, 58, 237, 0.18);
+      }
+
+      .pricing-card-header {
+        padding: 26px 24px 22px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .pricing-card-header h2 {
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+
+      .pricing-card-header p {
+        color: #d4d4d8;
+        line-height: 1.55;
+        min-height: 72px;
+      }
+
+      .price-block {
+        margin-top: 26px;
+      }
+
+      .price-line {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .price-amount {
+        font-size: 54px;
+        font-weight: 800;
+        letter-spacing: -1px;
+      }
+
+      .price-amount-custom {
+        font-size: 42px;
+      }
+
+      .price-period {
+        font-size: 18px;
+        color: #d4d4d8;
+        font-weight: 600;
+      }
+
+      .price-note {
+        margin-top: 12px;
+        color: #b4b4bc;
+        font-size: 15px;
+      }
+
+      .pricing-card-body {
+        padding: 22px 24px 26px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        flex: 1;
+      }
+
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        color: #e4e4e7;
+        padding-bottom: 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .toggle-pill {
+        width: 48px;
+        height: 28px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        position: relative;
+      }
+
+      .toggle-pill::after {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        left: 4px;
+        top: 4px;
+        background: #ffffff;
+      }
+
+      .plan-button {
+        width: 100%;
+        padding: 14px 18px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: transparent;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+
+      .plan-button:hover {
+        transform: translateY(-2px);
+        border-color: rgba(124, 58, 237, 0.8);
+      }
+
+      .plan-button.primary {
+        background: linear-gradient(135deg, #6d4aff, #7c3aed);
+        border-color: transparent;
+        box-shadow: 0 12px 28px rgba(124, 58, 237, 0.26);
+      }
+
+      .plan-button.success {
+        border-color: rgba(34, 197, 94, 0.55);
+        color: #bbf7d0;
+        background: rgba(22, 163, 74, 0.12);
+      }
+
+      .credits-select {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03);
+        color: #fff;
+        font-size: 15px;
+        padding: 14px 16px;
+        outline: none;
+      }
+
+      .features-title {
+        margin-top: 6px;
+        color: #f5f5f5;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .feature-list {
+        list-style: none;
+        display: grid;
+        gap: 16px;
+        color: #ededed;
+      }
+
+      .feature-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        line-height: 1.5;
+        color: #e4e4e7;
+      }
+
+      .feature-list i {
+        color: #f8fafc;
+        margin-top: 3px;
+      }
+
+      .footer-note {
+        margin-top: 28px;
+        text-align: center;
+        color: #8f8f99;
+        font-size: 14px;
+      }
+
+      .toast {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 9999;
+        min-width: 280px;
+        max-width: 420px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        color: #fff;
+        background: rgba(17, 24, 39, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.35);
+        opacity: 0;
+        transform: translateY(14px);
+        pointer-events: none;
+        transition: all 0.25s ease;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (max-width: 1024px) {
+        .pricing-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .pricing-card-header p {
+          min-height: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="page-topbar">
+        <a class="back-link" href="/home">
+          <i class="fas fa-arrow-left"></i>
+          <span>Back to dashboard</span>
+        </a>
+        <div class="page-title-wrap">
+          <h1>Choose your Edumorph plan</h1>
+          <p>
+            Upgrade for more credits, faster content generation, and premium
+            features. Styled to match the dark pricing layout from your sample
+            image.
+          </p>
+        </div>
+      </div>
+
+      <div class="account-strip">
+        <span class="account-chip" id="activePlanChip">Plan: Free</span>
+        <span class="account-credits"
+          >Current credits: <b id="creditsCount">100</b></span
+        >
+      </div>
+
+      <div class="pricing-grid">
+        <section class="pricing-card popular">
+          <div class="pricing-card-header">
+            <h2>Pro</h2>
+            <p>
+              Designed for fast-moving teams building together in real-time.
+            </p>
+            <div class="price-block">
+              <div class="price-line">
+                <span class="price-amount">$5</span>
+                <span class="price-period">per month</span>
+              </div>
+              <div class="price-note">shared across unlimited users</div>
+            </div>
+          </div>
+          <div class="pricing-card-body">
+            <div class="toggle-row">
+              <div class="toggle-pill"></div>
+              <span>Annual</span>
+            </div>
+            <button
+              class="plan-button primary"
+              type="button"
+              data-action="upgrade"
+              data-plan="Pro"
+              data-select-id="proCreditsSelect"
+            >
+              Upgrade
+            </button>
+            <select
+              class="credits-select"
+              id="proCreditsSelect"
+              aria-label="Pro credits"
+            >
+              <option>20 credits / month</option>
+              <option>40 credits / month</option>
+              <option>60 credits / month</option>
+            </select>
+            <div class="features-title">All features in Free, plus:</div>
+            <ul class="feature-list">
+              <li>
+                <i class="fas fa-check"></i><span>20 monthly credits</span>
+              </li>
+              <li>
+                <i class="fas fa-check"></i
+                ><span>5 daily credits (up to 150/month)</span>
+              </li>
+              <li>
+                <i class="fas fa-check"></i><span>Usage-based Cloud + AI</span>
+              </li>
+              <li><i class="fas fa-check"></i><span>Credit rollovers</span></li>
+              <li>
+                <i class="fas fa-check"></i
+                ><span>On-demand credit top-ups</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="pricing-card">
+          <div class="pricing-card-header">
+            <h2>Business</h2>
+            <p>Advanced controls and power features for growing departments.</p>
+            <div class="price-block">
+              <div class="price-line">
+                <span class="price-amount">$50</span>
+                <span class="price-period">per month</span>
+              </div>
+              <div class="price-note">shared across unlimited users</div>
+            </div>
+          </div>
+          <div class="pricing-card-body">
+            <div class="toggle-row">
+              <div class="toggle-pill"></div>
+              <span>Annual</span>
+            </div>
+            <button
+              class="plan-button"
+              type="button"
+              data-action="upgrade"
+              data-plan="Business"
+              data-select-id="businessCreditsSelect"
+            >
+              Upgrade
+            </button>
+            <select
+              class="credits-select"
+              id="businessCreditsSelect"
+              aria-label="Business credits"
+            >
+              <option>100 credits / month</option>
+              <option>250 credits / month</option>
+              <option>500 credits / month</option>
+            </select>
+            <div class="features-title">All features in Pro, plus:</div>
+            <ul class="feature-list">
+              <li>
+                <i class="fas fa-check"></i><span>100 monthly credits</span>
+              </li>
+              <li><i class="fas fa-check"></i><span>Internal publish</span></li>
+              <li><i class="fas fa-check"></i><span>SSO</span></li>
+              <li><i class="fas fa-check"></i><span>Team workspace</span></li>
+              <li>
+                <i class="fas fa-check"></i><span>Personal projects</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="pricing-card">
+          <div class="pricing-card-header">
+            <h2>Enterprise</h2>
+            <p>
+              Built for large orgs needing flexibility, scale, and governance.
+            </p>
+            <div class="price-block">
+              <div class="price-line">
+                <span class="price-amount price-amount-custom">Custom</span>
+              </div>
+              <div class="price-note">Flexible plans</div>
+            </div>
+          </div>
+          <div class="pricing-card-body">
+            <div class="toggle-row">
+              <div class="toggle-pill"></div>
+              <span>Annual</span>
+            </div>
+            <button
+              class="plan-button"
+              type="button"
+              data-action="demo"
+              data-plan="Enterprise"
+            >
+              Book a demo
+            </button>
+            <div class="features-title">All features in Business, plus:</div>
+            <ul class="feature-list">
+              <li>
+                <i class="fas fa-check"></i><span>Dedicated support</span>
+              </li>
+              <li>
+                <i class="fas fa-check"></i><span>Onboarding services</span>
+              </li>
+              <li><i class="fas fa-check"></i><span>Design systems</span></li>
+              <li><i class="fas fa-check"></i><span>SCIM</span></li>
+              <li>
+                <i class="fas fa-check"></i
+                ><span>Support for custom connectors</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+      </div>
+
+      <p class="footer-note">
+        Need backend routing later? This page is ready to be wired to a `/pro`
+        route too.
+      </p>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        const CONFIG = {
+          upgradeUrl: "/api/plan/upgrade",
+          demoUrl: "/api/plan/demo",
+          stateUrl: "/api/plan/state",
+          dashboardUrl: "/home",
+          defaultCredits: 100,
+          redirectDelayMs: 1200,
+        };
+
+        const STORAGE_KEYS = {
+          credits: "edumorph_credits",
+          plan: "edumorph_plan",
+          lastUpgrade: "edumorph_last_upgrade",
+        };
+
+        const creditsCountEl = document.getElementById("creditsCount");
+        const activePlanChipEl = document.getElementById("activePlanChip");
+        const toastEl = document.getElementById("toast");
+
+        function showToast(message) {
+          if (!toastEl) return;
+          toastEl.textContent = message;
+          toastEl.classList.add("show");
+          window.clearTimeout(showToast.timeoutId);
+          showToast.timeoutId = window.setTimeout(function () {
+            toastEl.classList.remove("show");
+          }, 2200);
+        }
+
+        function parseCreditValue(text) {
+          const match = String(text || "").match(/(\d+)/);
+          return match ? parseInt(match[1], 10) : 0;
+        }
+
+        function getStoredCredits() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEYS.credits);
+            if (raw === null) return CONFIG.defaultCredits;
+            const value = parseInt(raw, 10);
+            return Number.isNaN(value) ? CONFIG.defaultCredits : value;
+          } catch (error) {
+            return CONFIG.defaultCredits;
+          }
+        }
+
+        function setStoredCredits(nextCredits) {
+          const safe = Math.max(0, Number(nextCredits) || 0);
+          localStorage.setItem(STORAGE_KEYS.credits, String(safe));
+          if (creditsCountEl) creditsCountEl.textContent = String(safe);
+          return safe;
+        }
+
+        function getStoredPlan() {
+          try {
+            return localStorage.getItem(STORAGE_KEYS.plan) || "Free";
+          } catch (error) {
+            return "Free";
+          }
+        }
+
+        function setStoredPlan(planName) {
+          localStorage.setItem(STORAGE_KEYS.plan, planName);
+          if (activePlanChipEl) {
+            activePlanChipEl.textContent = "Plan: " + planName;
+          }
+        }
+
+        function saveLastUpgrade(data) {
+          localStorage.setItem(STORAGE_KEYS.lastUpgrade, JSON.stringify(data));
+        }
+
+        function updateUi(planName, credits) {
+          if (activePlanChipEl) {
+            activePlanChipEl.textContent = "Plan: " + planName;
+          }
+          if (creditsCountEl) {
+            creditsCountEl.textContent = String(credits);
+          }
+        }
+
+        function buildHeaders() {
+          return {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          };
+        }
+
+        async function readJsonSafe(response) {
+          try {
+            return await response.json();
+          } catch (error) {
+            return {};
+          }
+        }
+
+        async function fetchPlanStateFromBackend() {
+          const response = await fetch(CONFIG.stateUrl, {
+            method: "GET",
+            headers: buildHeaders(),
+            credentials: "same-origin",
+          });
+
+          if (!response.ok) {
+            throw new Error("State API failed");
+          }
+
+          const data = await readJsonSafe(response);
+          if (typeof data.credits === "number") {
+            setStoredCredits(data.credits);
+          }
+          if (typeof data.plan === "string" && data.plan.trim()) {
+            setStoredPlan(data.plan.trim());
+          }
+        }
+
+        async function postUpgradeToBackend(payload) {
+          const response = await fetch(CONFIG.upgradeUrl, {
+            method: "POST",
+            headers: buildHeaders(),
+            credentials: "same-origin",
+            body: JSON.stringify(payload),
+          });
+
+          const data = await readJsonSafe(response);
+          if (!response.ok) {
+            throw new Error(data.message || "Upgrade request failed");
+          }
+
+          return data;
+        }
+
+        async function postDemoToBackend(payload) {
+          const response = await fetch(CONFIG.demoUrl, {
+            method: "POST",
+            headers: buildHeaders(),
+            credentials: "same-origin",
+            body: JSON.stringify(payload),
+          });
+
+          const data = await readJsonSafe(response);
+          if (!response.ok) {
+            throw new Error(data.message || "Demo request failed");
+          }
+
+          return data;
+        }
+
+        function setButtonBusy(button, busy, busyText) {
+          if (!button) return;
+          if (busy) {
+            button.dataset.originalText = button.textContent || "";
+            button.disabled = true;
+            button.textContent = busyText;
+            return;
+          }
+          button.disabled = false;
+          if (button.dataset.originalText) {
+            button.textContent = button.dataset.originalText;
+          }
+        }
+
+        function redirectToDashboard(url) {
+          const nextUrl = url || CONFIG.dashboardUrl;
+          window.setTimeout(function () {
+            window.location.href = nextUrl;
+          }, CONFIG.redirectDelayMs);
+        }
+
+        async function upgradePlan(planName, selectId, buttonEl) {
+          const selectEl = document.getElementById(selectId);
+          const selectedText = selectEl ? selectEl.value : "";
+          const creditBoost = parseCreditValue(selectedText);
+
+          if (!creditBoost) {
+            showToast("Invalid credit pack. Please choose a valid option.");
+            return;
+          }
+
+          const payload = {
+            plan: planName,
+            credits_to_add: creditBoost,
+            selected_pack: selectedText,
+          };
+
+          setButtonBusy(buttonEl, true, "Processing...");
+
+          try {
+            let nextCredits;
+            let redirectUrl = CONFIG.dashboardUrl;
+
+            try {
+              const apiResult = await postUpgradeToBackend(payload);
+              nextCredits =
+                typeof apiResult.credits === "number"
+                  ? apiResult.credits
+                  : getStoredCredits() + creditBoost;
+              redirectUrl = apiResult.redirect_url || CONFIG.dashboardUrl;
+            } catch (backendError) {
+              nextCredits = getStoredCredits() + creditBoost;
+            }
+
+            setStoredCredits(nextCredits);
+            setStoredPlan(planName);
+            saveLastUpgrade({
+              plan: planName,
+              addedCredits: creditBoost,
+              totalCredits: nextCredits,
+              selectedPack: selectedText,
+              upgradedAt: new Date().toISOString(),
+            });
+
+            if (buttonEl) {
+              buttonEl.classList.add("success");
+              buttonEl.textContent = "Activated (+" + creditBoost + ")";
+              buttonEl.disabled = true;
+            }
+
+            showToast(
+              planName + " activated! " + creditBoost + " credits added.",
+            );
+            redirectToDashboard(redirectUrl);
+          } finally {
+            if (buttonEl && !buttonEl.classList.contains("success")) {
+              setButtonBusy(buttonEl, false, "Processing...");
+            }
+          }
+        }
+
+        async function bookDemo(planName, buttonEl) {
+          const payload = {
+            plan: planName,
+            requested_at: new Date().toISOString(),
+          };
+
+          setButtonBusy(buttonEl, true, "Sending...");
+
+          try {
+            let redirectUrl = CONFIG.dashboardUrl;
+
+            try {
+              const apiResult = await postDemoToBackend(payload);
+              redirectUrl = apiResult.redirect_url || CONFIG.dashboardUrl;
+            } catch (backendError) {
+              // fallback to local state when backend is not wired yet
+            }
+
+            setStoredPlan("Enterprise (Demo Requested)");
+            showToast("Demo request noted. We will contact you soon.");
+            redirectToDashboard(redirectUrl);
+          } finally {
+            setButtonBusy(buttonEl, false, "Sending...");
+          }
+        }
+
+        function attachActions() {
+          const buttons = document.querySelectorAll("button[data-action]");
+          buttons.forEach(function (button) {
+            button.addEventListener("click", function () {
+              const action = button.dataset.action || "";
+              const planName = button.dataset.plan || "Free";
+
+              if (action === "upgrade") {
+                const selectId = button.dataset.selectId || "";
+                upgradePlan(planName, selectId, button);
+                return;
+              }
+
+              if (action === "demo") {
+                bookDemo(planName, button);
+              }
+            });
+          });
+        }
+
+        function initializeFromLocalStorage() {
+          updateUi(getStoredPlan(), getStoredCredits());
+        }
+
+        async function initializeFromBackendIfAvailable() {
+          try {
+            await fetchPlanStateFromBackend();
+            updateUi(getStoredPlan(), getStoredCredits());
+          } catch (error) {
+            // backend not connected yet - local state already shown
+          }
+        }
+
+        initializeFromLocalStorage();
+        attachActions();
+        initializeFromBackendIfAvailable();
+      })();
+    </script>
+  </body>
+</html>
