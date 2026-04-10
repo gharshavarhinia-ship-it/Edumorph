@@ -655,9 +655,17 @@ def run_flowchart():
 
     os.makedirs("static/flowchart", exist_ok=True)
 
+    # Check if points.txt exists
+    points_file = "static/output/points.txt"
+    if not os.path.exists(points_file):
+        raise FileNotFoundError("⚠️ Script not generated yet! Please generate a script first before creating a flowchart.")
+
     # Read points
-    with open("static/output/points.txt", "r", encoding="utf-8") as f:
-        raw_points = [l.strip() for l in f if l.strip()]
+    try:
+        with open(points_file, "r", encoding="utf-8") as f:
+            raw_points = [l.strip() for l in f if l.strip()]
+    except Exception as e:
+        raise Exception(f"Error reading points file: {e}")
 
     # Extract structure
     structure = extract_flow_points(raw_points)

@@ -22,18 +22,40 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 def extract_public_url(result):
+    """Extract public URL from Supabase response - handles multiple formats"""
+    print(f"[extract_public_url] Input type: {type(result)}, value: {result}")
+    
+    # If it's already a string, return it
     if isinstance(result, str):
-        return result
+        if result and (result.startswith('http') or result.startswith('/')):
+            return result
+        return None
+    
+    # If it's a dict, try various keys
     if isinstance(result, dict):
-        data = result.get('data') if 'data' in result else result
-        if isinstance(data, dict):
-            return data.get('publicUrl') or data.get('public_url') or data.get('publicURL')
-        return data
+        # Try direct keys
+        for key in ['publicUrl', 'public_url', 'publicURL', 'path', 'fullPath']:
+            if key in result and result[key]:
+                return result[key]
+        
+        # Try data nested object
+        if 'data' in result:
+            data = result['data']
+            if isinstance(data, dict):
+                for key in ['publicUrl', 'public_url', 'publicURL', 'path', 'fullPath']:
+                    if key in data and data[key]:
+                        return data[key]
+        
+        return None
+    
+    # If it has a .data attribute
     if hasattr(result, 'data'):
         data = getattr(result, 'data')
         if isinstance(data, dict):
-            return data.get('publicUrl') or data.get('public_url') or data.get('publicURL')
-        return data
+            for key in ['publicUrl', 'public_url', 'publicURL', 'path', 'fullPath']:
+                if key in data and data[key]:
+                    return data[key]
+    
     return None
 
 
@@ -312,31 +334,48 @@ def animate():
 
     user_id = session["user_id"]
 
-    uploaded_file_path = os.path.join(
-        app.config["UPLOAD_FOLDER"], session["uploaded_file"]
-    )
+    try:
+        uploaded_file_path = os.path.join(
+            app.config["UPLOAD_FOLDER"], session["uploaded_file"]
+        )
 
-    filename = f"{uuid.uuid4().hex}.mp4"
-    out_path = os.path.join("static/output/final_videos", filename)
+        filename = f"{uuid.uuid4().hex}.mp4"
+        out_path = os.path.join("static/output/final_videos", filename)
 
-    age_group = session.get("age_group", "11+")
+        age_group = session.get("age_group", "11+")
 
-    engine.run_animation(out_path, uploaded_file_path, age_group)
+        engine.run_animation(out_path, uploaded_file_path, age_group)
 
-    # Upload to Supabase
-    storage_path = f"{user_id}/{filename}"
-    print(f"Uploading file to Supabase path: {storage_path}")
-    with open(out_path, "rb") as f:
-        upload_result = supabase.storage.from_("user-files").upload(storage_path, f)
+        # Upload to Supabase
+        storage_path = f"{user_id}/{filename}"
+        print(f"Uploading file to Supabase path: {storage_path}")
+        with open(out_path, "rb") as f:
+            upload_result = supabase.storage.from_("user-files").upload(
+                storage_path,
+                f,
+                {"upsert": True}
+            )
 
-    public_url = extract_public_url(
-        supabase.storage.from_("user-files").get_public_url(storage_path)
-    )
-    print(f"Public URL: {public_url}")
+        print("[ANIMATE] Getting public URL...")
+        url_result = supabase.storage.from_("user-files").get_public_url(storage_path)
+        print(f"[ANIMATE] URL result type: {type(url_result)}, value: {url_result}")
+        
+        public_url = extract_public_url(url_result)
+        
+        if not public_url or not isinstance(public_url, str):
+            print(f"[ANIMATE] ❌ Invalid public URL: {public_url}")
+            raise Exception(f"Invalid public URL returned: {public_url}")
+        
+        print(f"[ANIMATE] ✅ Public URL: {public_url}")
 
-    insert_user_library_item(user_id, filename, public_url, "animation")
+        insert_user_library_item(user_id, filename, public_url, "animation")
 
-    return redirect(url_for("animation_page", file=public_url))
+        return redirect(url_for("animation_page", file=public_url))
+    except Exception as e:
+        print(f"[ANIMATE] ❌ Final error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return f"<h1>❌ Error uploading animation</h1><p>{str(e)}</p><p><a href='/'>← Back to Home</a></p>", 500
 
 @app.route("/comic", methods=["POST"])
 def comic():
@@ -345,21 +384,38 @@ def comic():
 
     user_id = session["user_id"]
 
-    path = engine.run_comic()
-    filename = os.path.basename(path)
-    storage_path = f"{user_id}/{filename}"
-    print(f"Uploading file to Supabase path: {storage_path}")
-    with open(path, "rb") as f:
-        supabase.storage.from_("user-files").upload(storage_path, f)
+    try:
+        path = engine.run_comic()
+        filename = f"{uuid.uuid4().hex}_{os.path.basename(path)}"
+        storage_path = f"{user_id}/{filename}"
+        print(f"Uploading file to Supabase path: {storage_path}")
+        with open(path, "rb") as f:
+            supabase.storage.from_("user-files").upload(
+                storage_path,
+                f,
+                {"upsert": True}
+            )
 
-    public_url = extract_public_url(
-        supabase.storage.from_("user-files").get_public_url(storage_path)
-    )
-    print(f"Public URL: {public_url}")
+        print("[COMIC] Getting public URL...")
+        url_result = supabase.storage.from_("user-files").get_public_url(storage_path)
+        print(f"[COMIC] URL result type: {type(url_result)}, value: {url_result}")
+        
+        public_url = extract_public_url(url_result)
+        
+        if not public_url or not isinstance(public_url, str):
+            print(f"[COMIC] ❌ Invalid public URL: {public_url}")
+            raise Exception(f"Invalid public URL returned: {public_url}")
+        
+        print(f"[COMIC] ✅ Public URL: {public_url}")
 
-    insert_user_library_item(user_id, filename, public_url, "comic")
+        insert_user_library_item(user_id, filename, public_url, "comic")
 
-    return redirect(url_for("comic_page", file=public_url))
+        return redirect(url_for("comic_page", file=public_url))
+    except Exception as e:
+        print(f"[COMIC] ❌ Final error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return f"<h1>❌ Error uploading comic</h1><p>{str(e)}</p><p><a href='/'>← Back to Home</a></p>", 500
 
 @app.route("/flowchart", methods=["POST"])
 def flowchart():
@@ -368,21 +424,44 @@ def flowchart():
 
     user_id = session["user_id"]
 
-    path = engine.run_flowchart()
-    filename = os.path.basename(path)
-    storage_path = f"{user_id}/{filename}"
-    print(f"Uploading file to Supabase path: {storage_path}")
-    with open(path, "rb") as f:
-        supabase.storage.from_("user-files").upload(storage_path, f)
+    try:
+        path = engine.run_flowchart()
+    except FileNotFoundError as e:
+        return f"<h1>⚠️ Error</h1><p>{str(e)}</p><p><a href='/'>← Back to Home</a></p>", 400
+    except Exception as e:
+        return f"<h1>❌ Error generating flowchart</h1><p>{str(e)}</p><p><a href='/'>← Back to Home</a></p>", 500
 
-    public_url = extract_public_url(
-        supabase.storage.from_("user-files").get_public_url(storage_path)
-    )
-    print(f"Public URL: {public_url}")
+    try:
+        filename = f"{uuid.uuid4().hex}_{os.path.basename(path)}"
+        storage_path = f"{user_id}/{filename}"
+        print(f"Uploading file to Supabase path: {storage_path}")
+        with open(path, "rb") as f:
+            supabase.storage.from_("user-files").upload(
+                storage_path,
+                f,
+                {"upsert": True}
+            )
 
-    insert_user_library_item(user_id, filename, public_url, "flowchart")
+        print("[FLOWCHART] Getting public URL...")
+        url_result = supabase.storage.from_("user-files").get_public_url(storage_path)
+        print(f"[FLOWCHART] URL result type: {type(url_result)}, value: {url_result}")
+        
+        public_url = extract_public_url(url_result)
+        
+        if not public_url or not isinstance(public_url, str):
+            print(f"[FLOWCHART] ❌ Invalid public URL: {public_url}")
+            raise Exception(f"Invalid public URL returned: {public_url}")
+        
+        print(f"[FLOWCHART] ✅ Public URL: {public_url}")
 
-    return redirect(url_for("flowchart_page", file=public_url))
+        insert_user_library_item(user_id, filename, public_url, "flowchart")
+
+        return redirect(url_for("flowchart_page", file=public_url))
+    except Exception as e:
+        print(f"[FLOWCHART] ❌ Final error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return f"<h1>❌ Error uploading flowchart</h1><p>{str(e)}</p><p><a href='/'>← Back to Home</a></p>", 500
 
 # ================= PAGES =================
 
