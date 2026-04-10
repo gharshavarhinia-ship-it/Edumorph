@@ -13,7 +13,7 @@ pyttsx3
 spacy
 
 # AI & APIs
-google-generativeai
+google-genai
 
 # Configuration
 python-dotenv
