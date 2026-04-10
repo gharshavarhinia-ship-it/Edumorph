@@ -18,10 +18,11 @@ google-generativeai
 # Configuration
 python-dotenv
 
-# Video & Media
-moviepy
-imageio
-imageio-ffmpeg
+# Video & Media (Pinned versions for Render compatibility)
+moviepy==1.0.3
+imageio==2.34.1
+imageio-ffmpeg==0.4.9
+decorator
 
 # HTTP & Database
 requests
