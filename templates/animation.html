@@ -1829,7 +1829,6 @@ padding:6px;
         <div id="animationDisplay" style="
   margin-top:-580px;
   display:none;
-  display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
@@ -2049,7 +2048,7 @@ padding:6px;
         const fileName = uploadedFiles[uploadedFiles.length - 1].name;
         alert(`✨ Processing "${fileName}"...\n\nPreparing your learning options!`);
         setTimeout(() => {
-          window.location.href = "/slider";
+          window.location.href = "/age";
         }, 1500);
       }
     }
@@ -2362,24 +2361,19 @@ padding:6px;
       // ensure selects and displays are synced
       setAppLanguage(selectedLanguage || "en");
 
-      // Check for animation file in URL parameters
-      const urlParams = new URLSearchParams(window.location.search);
-const file = urlParams.get('file');
+      const file = "{{ file_url|default('')|e }}";
+      console.log("Video file:", file);
 
-console.log("Video file:", file);
+      if (file) {
+        const video = document.getElementById('animationVideo');
+        const source = document.getElementById('animationSource');
 
-if (file) {
-  const video = document.getElementById('animationVideo');
-  const source = document.getElementById('animationSource');
+        source.src = file;
 
-  // 🔥 IMPORTANT: full correct path
-  source.src = "/static/" + file;
-
-  video.load(); // ⭐ REQUIRED
-  video.style.display = "block";
-
-  document.getElementById('animationDisplay').style.display = 'block';
-}
+        video.load(); // ⭐ REQUIRED
+        video.style.display = "block";
+        document.getElementById('animationDisplay').style.display = 'block';
+      }
     });
 
     function goHome() {

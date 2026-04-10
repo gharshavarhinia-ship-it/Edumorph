@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment - Edumorph</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: "Inter", sans-serif;
+        background: #141414;
+        color: #f5f5f5;
+        padding: 32px 20px 48px;
+      }
+
+      .page-shell {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+
+      .page-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+      }
+
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: #d4d4d8;
+        text-decoration: none;
+        font-weight: 600;
+        padding: 12px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        transition: all 0.25s ease;
+      }
+
+      .back-link:hover {
+        color: #fff;
+        border-color: rgba(124, 58, 237, 0.6);
+        background: rgba(124, 58, 237, 0.14);
+      }
+
+      .page-title-wrap h1 {
+        font-size: clamp(32px, 5vw, 48px);
+        margin-bottom: 8px;
+      }
+
+      .page-title-wrap p {
+        color: #a1a1aa;
+        font-size: 16px;
+        max-width: 720px;
+        line-height: 1.6;
+      }
+
+      .payment-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+        margin-top: 28px;
+      }
+
+      .order-summary {
+        background: #1d1d1d;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 22px;
+        padding: 26px 24px;
+        height: fit-content;
+      }
+
+      .order-summary h2 {
+        font-size: 20px;
+        margin-bottom: 20px;
+        color: #fff;
+      }
+
+      .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .order-item.total {
+        border-bottom: none;
+        padding-top: 16px;
+        font-weight: 600;
+      }
+
+      .plan-badge {
+        display: inline-block;
+        background: #667eea;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-right: 8px;
+      }
+
+      .payment-form {
+        background: #1d1d1d;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 22px;
+        padding: 26px 24px;
+      }
+
+      .payment-form h2 {
+        font-size: 20px;
+        margin-bottom: 20px;
+        color: #fff;
+      }
+
+      .form-section {
+        margin-bottom: 24px;
+      }
+
+      .form-section h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #e4e4e7;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .form-section label {
+        display: block;
+        margin-bottom: 8px;
+        color: #e4e4e7;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .form-section input,
+      .form-section select {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03);
+        color: #fff;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.25s ease;
+        margin-bottom: 14px;
+      }
+
+      .form-section input:focus,
+      .form-section select:focus {
+        border-color: rgba(124, 58, 237, 0.6);
+        background: rgba(124, 58, 237, 0.08);
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+
+      .form-row.full {
+        grid-template-columns: 1fr;
+      }
+
+      .form-row .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .form-row .form-group label {
+        margin-bottom: 8px;
+      }
+
+      .form-row .form-group input {
+        margin-bottom: 0;
+      }
+
+      .form-group {
+        margin-bottom: 14px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #e4e4e7;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03);
+        color: #fff;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.25s ease;
+      }
+
+      .form-group input:focus {
+        border-color: rgba(124, 58, 237, 0.6);
+        background: rgba(124, 58, 237, 0.08);
+      }
+
+      .card-preview {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        color: white;
+        min-height: 180px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        font-family: "Courier New", monospace;
+      }
+
+      .card-preview-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+      }
+
+      .card-chip {
+        width: 40px;
+        height: 30px;
+        background: rgba(255, 215, 0, 0.3);
+        border-radius: 4px;
+      }
+
+      .card-network {
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      .card-number {
+        font-size: 18px;
+        letter-spacing: 2px;
+        margin-bottom: 20px;
+        word-break: break-all;
+      }
+
+      .card-details {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .card-holder {
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .card-expiry {
+        font-size: 12px;
+        text-align: right;
+      }
+
+      .checkbox-group {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .checkbox-group input[type="checkbox"] {
+        margin-top: 4px;
+        cursor: pointer;
+        accent-color: #667eea;
+      }
+
+      .checkbox-group label {
+        margin: 0;
+        color: #a1a1aa;
+        font-weight: 400;
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      .submit-button {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .submit-button:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      }
+
+      .submit-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .security-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 16px;
+        color: #a1a1aa;
+        font-size: 13px;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #323232;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        max-width: 300px;
+        z-index: 9999;
+        word-wrap: break-word;
+        white-space: pre-line;
+        animation: slideIn 0.3s ease;
+        display: none;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .payment-container {
+          grid-template-columns: 1fr;
+        }
+
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="toast" class="toast"></div>
+<div class="page-shell">
+  <div class="page-topbar">
+    <a class="back-link" href="{{ url_for('pro') }}">
+      <i class="fas fa-arrow-left"></i>
+      <span>Back to plans</span>
+    </a>
+    <div class="page-title-wrap">
+      <h1>Complete Your Payment</h1>
+      <p>Secure checkout for your Edumorph credits upgrade.</p>
+    </div>
+  </div>
+</div>
+
+      <div class="payment-container">
+        <!-- Order Summary -->
+        <div class="order-summary">
+          <h2>Order Summary</h2>
+          <div class="order-item">
+            <label>
+              <span class="plan-badge" id="planBadge">Pro</span>
+              <span id="planWithPackage" style="color: #e4e4e7"
+                >Monthly Subscription</span
+              >
+            </label>
+            <span id="planPrice">$5.00</span>
+          </div>
+          <div class="order-item">
+            <label>Selected Package</label>
+            <span id="creditsAmount" style="color: #ddd6fe; font-weight: 600"
+              >20 credits / month</span
+            >
+          </div>
+          <div class="order-item">
+            <label>Tax</label>
+            <span id="taxAmount">$0.50</span>
+          </div>
+          <div class="order-item total">
+            <label>Total Due</label>
+            <span id="totalAmount">$5.50</span>
+          </div>
+          <div
+            style="
+              margin-top: 20px;
+              padding-top: 20px;
+              border-top: 1px solid rgba(255, 255, 255, 0.08);
+              color: #a1a1aa;
+              font-size: 13px;
+              line-height: 1.6;
+            "
+          >
+            Your subscription will auto-renew monthly. You can cancel anytime
+            from your account settings.
+          </div>
+        </div>
+
+        <!-- Payment Form -->
+        <div class="payment-form">
+          <h2>Payment Details</h2>
+
+          <!-- Card Preview -->
+          <div class="card-preview" id="cardPreview">
+            <div class="card-preview-top">
+              <div class="card-chip"></div>
+              <div class="card-network">💳</div>
+            </div>
+            <div class="card-number" id="cardNumberDisplay">
+              •••• •••• •••• ••••
+            </div>
+            <div class="card-details">
+              <div class="card-holder" id="cardHolderDisplay">Your Name</div>
+              <div class="card-expiry" id="cardExpiryDisplay">MM/YY</div>
+            </div>
+          </div>
+
+          <!-- Personal Details Section -->
+          <div class="form-section">
+            <h3>
+              <i class="fas fa-user"></i>
+              Personal Information
+            </h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fullName">Full Name</label>
+                <input
+                  type="text"
+                  id="fullName"
+                  placeholder="John Doe"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                  type="email"
+                  id="email"
+                  placeholder="john@example.com"
+                  required
+                />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  placeholder="+1 (555) 123-4567"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="address">Address</label>
+                <input
+                  type="text"
+                  id="address"
+                  placeholder="123 Main Street"
+                  required
+                />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="city">City</label>
+                <input type="text" id="city" placeholder="New York" required />
+              </div>
+              <div class="form-group">
+                <label for="zipcode">ZIP Code</label>
+                <input type="text" id="zipcode" placeholder="10001" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Details Section -->
+          <div class="form-section">
+            <h3>
+              <i class="fas fa-credit-card"></i>
+              Card Information
+            </h3>
+            <div class="form-group">
+              <label for="cardNumber">Card Number</label>
+              <input
+                type="text"
+                id="cardNumber"
+                placeholder="1234 5678 9012 3456"
+                maxlength="19"
+                required
+              />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="cardExpiry">Expiry Date</label>
+                <input
+                  type="text"
+                  id="cardExpiry"
+                  placeholder="MM/YY"
+                  maxlength="5"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="cardCVV">CVV</label>
+                <input
+                  type="text"
+                  id="cardCVV"
+                  placeholder="123"
+                  maxlength="4"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="agreeTerms" name="agreeTerms" checked />
+            <label for="agreeTerms">
+              I agree to the Terms of Service and Privacy Policy
+            </label>
+          </div>
+
+          <button class="submit-button" id="submitBtn" type="button">
+            Complete Payment
+          </button>
+
+          <div class="security-badge">
+            <i class="fas fa-lock"></i>
+            <span>Your payment is secure and encrypted</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        const CONFIG = {
+          dashboardUrl: "/home",
+          redirectDelayMs: 1500,
+        };
+
+        const STORAGE_KEYS = {
+          plan: "edumorph_plan",
+          credits: "edumorph_credits",
+          lastUpgrade: "edumorph_last_upgrade",
+          paymentHistory: "edumorph_payment_history",
+        };
+
+        const toastEl = document.getElementById("toast");
+        const submitBtn = document.getElementById("submitBtn");
+
+        // Form elements
+        const fullName = document.getElementById("fullName");
+        const email = document.getElementById("email");
+        const phone = document.getElementById("phone");
+        const address = document.getElementById("address");
+        const city = document.getElementById("city");
+        const zipcode = document.getElementById("zipcode");
+        const cardNumber = document.getElementById("cardNumber");
+        const cardExpiry = document.getElementById("cardExpiry");
+        const cardCVV = document.getElementById("cardCVV");
+
+        // Card preview elements
+        const cardNumberDisplay = document.getElementById("cardNumberDisplay");
+        const cardHolderDisplay = document.getElementById("cardHolderDisplay");
+        const cardExpiryDisplay = document.getElementById("cardExpiryDisplay");
+
+        function setStoredCredits(nextCredits) {
+          const safe = Math.max(0, Number(nextCredits) || 0);
+          localStorage.setItem(STORAGE_KEYS.credits, String(safe));
+          return safe;
+        }
+
+        function getStoredCredits() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEYS.credits);
+            if (raw === null) return 100;
+            const value = parseInt(raw, 10);
+            return Number.isNaN(value) ? 100 : value;
+          } catch (error) {
+            return 100;
+          }
+        }
+
+        function getUpgradeData() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEYS.lastUpgrade);
+            return raw ? JSON.parse(raw) : null;
+          } catch (error) {
+            return null;
+          }
+        }
+
+        function getPlanName() {
+          const upgradeData = getUpgradeData();
+          try {
+            return upgradeData?.plan || "Pro";
+          } catch (error) {
+            return "Pro";
+          }
+        }
+
+        function updateCardPreview() {
+          // Update card number
+          let displayNumber = cardNumber.value.replace(/\s/g, "");
+          if (displayNumber.length === 0) {
+            displayNumber = "•••• •••• •••• ••••";
+          } else {
+            displayNumber = displayNumber
+              .padEnd(16, "•")
+              .replace(/(\d{4})/g, "$1 ")
+              .trim();
+          }
+          cardNumberDisplay.textContent = displayNumber;
+
+          // Update cardholder name
+          cardHolderDisplay.textContent = fullName.value || "Your Name";
+
+          // Update expiry
+          cardExpiryDisplay.textContent = cardExpiry.value || "MM/YY";
+        }
+
+        function formatCardNumber(value) {
+          const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
+          const matches = v.match(/\d{4,16}/g);
+          const match = (matches && matches[0]) || "";
+          const parts = [];
+          for (let i = 0, len = match.length; i < len; i += 4) {
+            parts.push(match.substring(i, i + 4));
+          }
+          if (parts.length) {
+            return parts.join(" ");
+          } else {
+            return value;
+          }
+        }
+
+        function formatExpiry(value) {
+          const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
+          if (v.length >= 2) {
+            return v.slice(0, 2) + "/" + v.slice(2, 4);
+          }
+          return v;
+        }
+
+        function showToast(message) {
+          toastEl.textContent = message;
+          toastEl.style.display = "block";
+          window.setTimeout(function () {
+            toastEl.style.display = "none";
+          }, 3000);
+        }
+
+        function generateTransactionId() {
+          const timestamp = Date.now().toString().slice(-8);
+          const random = Math.random()
+            .toString(36)
+            .substring(2, 7)
+            .toUpperCase();
+          return "TXN" + timestamp + random;
+        }
+
+        function savePaymentRecord(transactionId, data) {
+          let paymentHistory = [];
+          try {
+            const raw = localStorage.getItem(STORAGE_KEYS.paymentHistory);
+            paymentHistory = raw ? JSON.parse(raw) : [];
+          } catch (error) {
+            paymentHistory = [];
+          }
+
+          const paymentRecord = {
+            transactionId: transactionId,
+            plan: data.plan,
+            credits: data.credits,
+            amount: data.amount,
+            paymentMethod: "card",
+            status: "completed",
+            verifiedAt: new Date().toISOString(),
+            cardholder: data.cardholder,
+          };
+
+          paymentHistory.push(paymentRecord);
+          localStorage.setItem(
+            STORAGE_KEYS.paymentHistory,
+            JSON.stringify(paymentHistory),
+          );
+          return paymentRecord;
+        }
+
+        function validateForm() {
+          if (!fullName.value.trim()) {
+            showToast("Please enter your full name");
+            return false;
+          }
+          if (!email.value.trim() || !email.value.includes("@")) {
+            showToast("Please enter a valid email address");
+            return false;
+          }
+          if (!phone.value.trim()) {
+            showToast("Please enter your phone number");
+            return false;
+          }
+          if (!address.value.trim()) {
+            showToast("Please enter your address");
+            return false;
+          }
+          if (!city.value.trim()) {
+            showToast("Please enter your city");
+            return false;
+          }
+          if (!zipcode.value.trim()) {
+            showToast("Please enter your ZIP code");
+            return false;
+          }
+          if (
+            !cardNumber.value.trim() ||
+            cardNumber.value.replace(/\s/g, "").length < 13
+          ) {
+            showToast("Please enter a valid card number");
+            return false;
+          }
+          if (!cardExpiry.value.trim() || !cardExpiry.value.includes("/")) {
+            showToast("Please enter card expiry in MM/YY format");
+            return false;
+          }
+          if (!cardCVV.value.trim() || cardCVV.value.length < 3) {
+            showToast("Please enter a valid CVV");
+            return false;
+          }
+          if (!document.getElementById("agreeTerms").checked) {
+            showToast("Please agree to the Terms of Service");
+            return false;
+          }
+          return true;
+        }
+
+        async function processPayment() {
+          if (!validateForm()) {
+            return;
+          }
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Processing Payment...";
+
+          const upgradeData = getUpgradeData();
+
+          try {
+            const transactionId = generateTransactionId();
+
+            // Step 1: Process payment
+            await new Promise((resolve) => setTimeout(resolve, 800));
+            showToast("Processing payment...");
+
+            // Step 2: Verify transaction
+            await new Promise((resolve) => setTimeout(resolve, 800));
+            showToast("Verifying transaction...");
+
+            // Step 3: Add credits
+            if (upgradeData && upgradeData.addedCredits) {
+              const currentCredits = getStoredCredits();
+              const newCredits = currentCredits + upgradeData.addedCredits;
+              setStoredCredits(newCredits);
+            }
+
+            // Step 4: Save payment record
+            const paymentData = {
+              plan: getPlanName(),
+              credits: upgradeData?.addedCredits || 20,
+              amount: document.getElementById("totalAmount").textContent,
+              cardholder: fullName.value,
+            };
+            savePaymentRecord(transactionId, paymentData);
+
+            // Final confirmation
+            submitBtn.textContent = "Payment Confirmed ✓";
+            submitBtn.style.background =
+              "linear-gradient(135deg, #22c55e, #16a34a)";
+
+            showToast(
+              `Payment successful!\nTransaction ID: ${transactionId}\nCredits added: +${upgradeData?.addedCredits || 20}`,
+            );
+
+            // Redirect
+            window.setTimeout(function () {
+              window.location.href = CONFIG.dashboardUrl;
+            }, CONFIG.redirectDelayMs);
+          } catch (error) {
+            showToast(
+              "Error: " + (error.message || "Payment processing failed"),
+            );
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Complete Payment";
+          }
+        }
+
+        function updateOrderSummary() {
+          const upgradeData = getUpgradeData();
+          const planName = getPlanName();
+
+          if (upgradeData) {
+            const selectText = upgradeData.selectedPack || "20 credits / month";
+            const creditValue = parseInt(selectText.match(/(\d+)/)[1], 10);
+
+            document.getElementById("planBadge").textContent = planName;
+            const planNameElement = document.getElementById("planWithPackage");
+            if (planNameElement) {
+              planNameElement.textContent = planName + " Plan - " + selectText;
+            }
+            document.getElementById("creditsAmount").textContent = selectText;
+
+            const PRICING_MAP = {
+              Pro: {
+                20: 5,
+                40: 9,
+                60: 13,
+              },
+              Business: {
+                100: 50,
+                250: 110,
+                500: 180,
+              },
+            };
+
+            const pricingForPlan = PRICING_MAP[planName] || { 20: 5 };
+            const basePrice =
+              pricingForPlan[creditValue] ||
+              pricingForPlan[Object.keys(pricingForPlan)[0]];
+            const taxAmount = (basePrice * 0.1).toFixed(2);
+            const total = (basePrice + parseFloat(taxAmount)).toFixed(2);
+
+            document.getElementById("planPrice").textContent =
+              "$" + basePrice.toFixed(2);
+            document.getElementById("taxAmount").textContent = "$" + taxAmount;
+            document.getElementById("totalAmount").textContent = "$" + total;
+          }
+        }
+
+        // Event listeners for card preview updates
+        cardNumber.addEventListener("input", function (e) {
+          e.target.value = formatCardNumber(e.target.value);
+          updateCardPreview();
+        });
+
+        cardExpiry.addEventListener("input", function (e) {
+          e.target.value = formatExpiry(e.target.value);
+          updateCardPreview();
+        });
+
+        fullName.addEventListener("input", updateCardPreview);
+        cardCVV.addEventListener("input", function (e) {
+          e.target.value = e.target.value.replace(/\D/g, "");
+        });
+
+        submitBtn.addEventListener("click", processPayment);
+
+        // Initialize
+        updateOrderSummary();
+      })();
+    </script>
+  </body>
+</html>

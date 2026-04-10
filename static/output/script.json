@@ -2,90 +2,90 @@
   "animation": [
     {
       "scene": 1,
-      "narration": "Environmental pollution is the introduction of harmful substances into our air, water, and soil, disrupting the delicate balance of our planet's ecosystems.",
-      "visual": "A split-screen animation showing a lush green forest on one side and a grey, polluted landscape on the other, transitioning as dark particles drift across."
+      "narration": "Pollution adds harmful or unwanted substances to our natural environment. These pollutants can be chemical, physical, or even biological.",
+      "visual": "A vibrant green forest gradually turns grey as tiny glowing 'pollutant' particles float into the air and water."
     },
     {
       "scene": 2,
-      "narration": "Air pollution stems from vehicles and factories releasing toxic gases and smoke, leading to serious respiratory diseases like asthma and bronchitis in humans.",
-      "visual": "Animated factory chimneys and car exhausts pumping thick grey smoke into a hazy sky, with an overlay icon of human lungs showing irritation."
+      "narration": "Factories and cars release smoke and gases into the atmosphere. This bad air causes breathing issues like asthma and bronchitis.",
+      "visual": "A city skyline filled with cars puffing grey clouds and factory chimneys emitting thick black smoke into the sky."
     },
     {
       "scene": 3,
-      "narration": "Water pollution occurs when sewage, plastics, and industrial waste contaminate our oceans and rivers, harming aquatic life and making water unsafe for drinking.",
-      "visual": "A cross-section of a river showing plastic bottles and dark sludge flowing downstream, with silhouettes of fish struggling to swim through the debris."
+      "narration": "Industrial waste and plastic often contaminate our rivers and oceans. Polluted water harms aquatic life and is unsafe for drinking.",
+      "visual": "A drain pipe pouring purple liquid into a river where a sad fish swims past a floating plastic bottle."
     },
     {
       "scene": 4,
-      "narration": "Soil pollution is caused by excessive pesticides and toxic waste dumping, which reduces land fertility and poses a major threat to global food production.",
-      "visual": "A close-up of a farmer spraying bright yellow chemicals on a cracked, dry field where plants are wilting near a pile of discarded industrial trash."
+      "narration": "Heavy use of pesticides and plastic poisons the earth's surface. Damaged soil grows less food and hurts our entire ecosystem.",
+      "visual": "A farmer spraying bright yellow chemicals on a brown field. The plants wilt and the soil cracks into pieces."
     },
     {
       "scene": 5,
-      "narration": "With rapid industrialization, pollution has become a critical global problem. Understanding these causes is the first step toward protecting our health and wildlife.",
-      "visual": "A rotating globe surrounded by a ring of pollutants that slowly starts to clear as green leaf icons sprout across the continents, ending with a clean blue sky."
+      "narration": "Pollution disrupts ecosystems and creates serious risks for human health. We must protect our planet to ensure a greener future.",
+      "visual": "A split screen showing a polluted city on the left and a clean, solar-powered park on the right."
     }
   ],
   "comic": [
     {
       "scene": 1,
-      "narration": "Meet Pip! He\u2019s a tiny leaf with a big job: making his own lunch using magic from the sky.",
-      "visual": "A cute, anthropomorphic green leaf named Pip waving from a tree branch under a bright blue sky."
+      "narration": "Our planet faces a sneaky enemy known as environmental pollution.",
+      "visual": "A friendly robot guide stands on a green Earth, looking through a magnifying glass at a gray smudge."
     },
     {
       "scene": 2,
-      "narration": "Deep underground, the tree's roots act like giant straws to suck up water and minerals.",
-      "visual": "A cross-section of the soil showing thick tree roots 'slurping' blue water droplets like a milkshake."
+      "narration": "It happens when harmful substances enter our natural world.",
+      "visual": "Bright green slime and dark smoke slowly oozing into a beautiful, sunny forest."
     },
     {
       "scene": 3,
-      "narration": "Pip takes a deep breath, absorbing Carbon Dioxide from the air through tiny pores in his skin.",
-      "visual": "Close-up of Pip with his mouth open, pulling in grey bubbles labeled 'CO2' from the surrounding air."
+      "narration": "These villains, called pollutants, break nature\u2019s delicate balance.",
+      "visual": "Three small, grumpy monsters labeled Chemical, Physical, and Biological jumping on a seesaw."
     },
     {
       "scene": 4,
-      "narration": "But every chef needs a stove! Pip looks up to find his power source: the Sun.",
-      "visual": "Pip wearing cool sunglasses, looking up at a smiling sun shining bright golden rays down on him."
+      "narration": "Pollution disrupts ecosystems and changes our global climate patterns.",
+      "visual": "A split screen showing a healthy coral reef and a dying, bleached one."
     },
     {
       "scene": 5,
-      "narration": "Pip uses his secret weapon, Chlorophyll, to trap that golden light energy.",
-      "visual": "Pip wearing a sparkly green superhero cape that glows as it catches the sunlight."
+      "narration": "Factories and cars pump thick smoke into the atmosphere.",
+      "visual": "A busy city street with a line of cars and a factory chimney blowing dark clouds."
     },
     {
       "scene": 6,
-      "narration": "Inside Pip's 'leafy kitchen,' the real magic begins to sizzle.",
-      "visual": "Pip inside a laboratory-style kitchen, mixing a bowl of 'Water' and 'CO2' with a glowing sun-whisk."
+      "narration": "This air pollution causes breathing problems like asthma and bronchitis.",
+      "visual": "A person wearing a mask while walking through a hazy, gray city park."
     },
     {
       "scene": 7,
-      "narration": "Using the sun's energy, Pip transforms the ingredients into a sweet sugar called Glucose.",
-      "visual": "A magical 'ZAP!' effect showing the mixture turning into sparkling sugar cubes labeled 'Food'."
+      "narration": "Sewage and plastic trash turn our blue rivers brown.",
+      "visual": "A large pipe pouring purple liquid into a river filled with floating plastic bottles."
     },
     {
       "scene": 8,
-      "narration": "This glucose is Pip\u2019s fuel, helping him grow taller and keep the tree strong.",
-      "visual": "Pip eating a sugar cube and instantly flexing huge muscles, looking energetic."
+      "narration": "Dirty water hurts sea creatures and makes drinking very unsafe.",
+      "visual": "A sad turtle swimming near an oil spill and a pile of underwater trash."
     },
     {
       "scene": 9,
-      "narration": "While cooking, Pip creates a special surprise: fresh Oxygen!",
-      "visual": "Pip blowing beautiful, clear bubbles out into the air labeled with 'O2'."
+      "narration": "Using too many pesticides poisons the ground beneath our feet.",
+      "visual": "A tractor spraying a glowing green mist over a field of wilted plants."
     },
     {
       "scene": 10,
-      "narration": "He releases this Oxygen so that every animal and human on Earth can breathe.",
-      "visual": "A happy dog and a young girl nearby taking a deep, refreshing breath of the air Pip just cleaned."
+      "narration": "Toxic soil stops healthy crops from growing for humans.",
+      "visual": "A farmer looking sadly at a patch of dry, cracked earth with tiny, brown sprouts."
     },
     {
       "scene": 11,
-      "narration": "This cycle, called Photosynthesis, keeps the air perfectly balanced for everyone.",
-      "visual": "A circular diagram showing the sun, Pip the leaf, and a human, with arrows connecting them in a loop."
+      "narration": "Growing cities make pollution a major global crisis today.",
+      "visual": "A world map with red 'warning' icons popping up over large, crowded industrial cities."
     },
     {
       "scene": 12,
-      "narration": "From the smallest bug to the biggest elephant, Pip\u2019s cooking powers the whole world!",
-      "visual": "A wide shot of a lush forest filled with animals, all surrounding Pip\u2019s tree under a happy sun."
+      "narration": "We must act now to save our home and health.",
+      "visual": "A group of students planting a tree and placing trash into a recycling bin."
     }
   ]
 }

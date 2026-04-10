@@ -251,8 +251,8 @@
         width: 100%;
         border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.03);
-        color: #fff;
+        background: rgba(255, 255, 255, 0.95);
+        color: #080808;
         font-size: 15px;
         padding: 14px 16px;
         outline: none;
@@ -330,10 +330,13 @@
   <body>
     <div class="page-shell">
       <div class="page-topbar">
-        <a class="back-link" href="/home">
-          <i class="fas fa-arrow-left"></i>
-          <span>Back to dashboard</span>
-        </a>
+        <div style="display: flex; gap: 15px; align-items: center;">
+          <a class="back-link" href="/home">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to dashboard</span>
+          </a>
+          
+        </div>
         <div class="page-title-wrap">
           <h1>Choose your Edumorph plan</h1>
           <p>
@@ -522,6 +525,7 @@
           demoUrl: "/api/plan/demo",
           stateUrl: "/api/plan/state",
           dashboardUrl: "/home",
+          paymentUrl: "/payment",
           defaultCredits: 100,
           redirectDelayMs: 1200,
         };
@@ -704,39 +708,30 @@
           setButtonBusy(buttonEl, true, "Processing...");
 
           try {
-            let nextCredits;
-            let redirectUrl = CONFIG.dashboardUrl;
+            let redirectUrl = CONFIG.paymentUrl;
 
             try {
               const apiResult = await postUpgradeToBackend(payload);
-              nextCredits =
-                typeof apiResult.credits === "number"
-                  ? apiResult.credits
-                  : getStoredCredits() + creditBoost;
-              redirectUrl = apiResult.redirect_url || CONFIG.dashboardUrl;
+              redirectUrl = apiResult.redirect_url || CONFIG.paymentUrl;
             } catch (backendError) {
-              nextCredits = getStoredCredits() + creditBoost;
+              // backend not connected yet
             }
 
-            setStoredCredits(nextCredits);
             setStoredPlan(planName);
             saveLastUpgrade({
               plan: planName,
               addedCredits: creditBoost,
-              totalCredits: nextCredits,
               selectedPack: selectedText,
               upgradedAt: new Date().toISOString(),
             });
 
             if (buttonEl) {
               buttonEl.classList.add("success");
-              buttonEl.textContent = "Activated (+" + creditBoost + ")";
+              buttonEl.textContent = "Processing...";
               buttonEl.disabled = true;
             }
 
-            showToast(
-              planName + " activated! " + creditBoost + " credits added.",
-            );
+            showToast("Proceeding to payment...");
             redirectToDashboard(redirectUrl);
           } finally {
             if (buttonEl && !buttonEl.classList.contains("success")) {
@@ -771,6 +766,40 @@
           }
         }
 
+        const PRICING_MAP = {
+          Pro: {
+            base: 5,
+            20: 5,
+            40: 9,
+            60: 13,
+          },
+          Business: {
+            base: 50,
+            100: 50,
+            250: 110,
+            500: 180,
+          },
+        };
+
+        function updatePriceForCard(selectId, priceAmountSelector) {
+          const selectEl = document.getElementById(selectId);
+          if (!selectEl) return;
+
+          const selectedText = selectEl.value;
+          const creditValue = parseCreditValue(selectedText);
+          const card = selectEl.closest(".pricing-card");
+          const priceEl = card ? card.querySelector(".price-amount") : null;
+          const planName = card ? card.querySelector("h2").textContent : "Pro";
+
+          const pricing = PRICING_MAP[planName];
+          if (!pricing) return;
+
+          const newPrice = pricing[creditValue] || pricing.base;
+          if (priceEl) {
+            priceEl.textContent = "$" + newPrice;
+          }
+        }
+
         function attachActions() {
           const buttons = document.querySelectorAll("button[data-action]");
           buttons.forEach(function (button) {
@@ -779,8 +808,8 @@
               const planName = button.dataset.plan || "Free";
 
               if (action === "upgrade") {
-                const selectId = button.dataset.selectId || "";
-                upgradePlan(planName, selectId, button);
+                // Bypass backend route and go directly to payment via client-side JavaScript
+                window.location.href = CONFIG.paymentUrl;
                 return;
               }
 
@@ -789,6 +818,15 @@
               }
             });
           });
+
+          // Attach credit select change listeners
+          document
+            .querySelectorAll(".credits-select")
+            .forEach(function (select) {
+              select.addEventListener("change", function () {
+                updatePriceForCard(select.id);
+              });
+            });
         }
 
         function initializeFromLocalStorage() {

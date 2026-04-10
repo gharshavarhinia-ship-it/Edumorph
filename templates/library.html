@@ -1351,29 +1351,38 @@ margin-bottom:40px;
     {% for item in library_items %}
     <div class="file-item">
         <div class="file-info">
-            <h4>{{ item.title }}</h4>
+            <h4>{{ item.file_name or item.title }}</h4>
             <p>
-                {{ item.file_type }} • 
+                {{ item.content_type or item.file_type }} • 
                 {{ item.file_size }} MB • 
                 {{ item.created_at }}
             </p>
         </div>
+        {% set file_url = item.file_url or item.file_path %}
+        {% set file_name = item.file_name or item.title or 'download' %}
+        {% set content_type = (item.content_type or item.file_type)|lower %}
 
-        {% if item.file_type == 'MP4' %}
-            <a href="{{ url_for('static', filename=item.file_path) }}" target="_blank">
+        {% if content_type == 'animation' %}
+            <a href="{{ url_for('animation_page', file=file_url) }}" target="_blank">
                 <button class="file-btn">▶️ Play</button>
             </a>
-
-        {% elif item.file_type == 'PDF' %}
-            <a href="{{ url_for('static', filename=item.file_path) }}" target="_blank">
-                <button class="file-btn">📄 View</button>
+        {% elif content_type == 'comic' %}
+            <a href="{{ url_for('comic_page', file=file_url) }}" target="_blank">
+                <button class="file-btn">🖼️ View</button>
             </a>
-
+        {% elif content_type == 'flowchart' %}
+            <a href="{{ url_for('flowchart_page', file=file_url) }}" target="_blank">
+                <button class="file-btn">🗺️ View</button>
+            </a>
         {% else %}
-            <a href="{{ url_for('static', filename=item.file_path) }}" download>
-                <button class="file-btn">⬇️ Download</button>
+            <a href="{{ file_url }}" target="_blank">
+                <button class="file-btn">Open</button>
             </a>
         {% endif %}
+
+        <a href="{{ file_url }}" download="{{ file_name }}">
+            <button class="file-btn">⬇️ Download</button>
+        </a>
     </div>
     {% endfor %}
 {% else %}

@@ -2,17 +2,22 @@ import os
 import glob
 import json
 import random
+import requests
+import logging
 from PIL import Image, ImageDraw, ImageFont
 import pytesseract
 import numpy as np
 import pyttsx3
 import textwrap 
-import torch
 import spacy
 import google.generativeai as genai
-from diffusers import StableDiffusionPipeline
 from dotenv import load_dotenv
 from moviepy.editor import AudioFileClip, ImageClip, concatenate_videoclips, CompositeVideoClip
+from io import BytesIO
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
@@ -22,8 +27,9 @@ genai.configure(api_key=GEMINI_KEY)
 
 voice_model = genai.GenerativeModel("gemini-flash-latest")
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-print("[INFO] Device:", device)
+# ================= MODEL SERVER CONFIG =================
+MODEL_SERVER_URL = os.getenv("MODEL_SERVER_URL", "http://localhost:5001")
+logger.info(f"[ENGINE] Using model server: {MODEL_SERVER_URL}")
 
 if os.name == "nt":
     tesseract_path = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -31,15 +37,6 @@ if os.name == "nt":
         pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 nlp = spacy.load("en_core_web_sm")
-
-BASE = os.path.dirname(os.path.abspath(__file__))
-model_path = os.path.join(BASE, "models", "stable-diffusion", "realisticVisionV60B1_v51HyperVAE.safetensors")
-
-pipe = StableDiffusionPipeline.from_single_file(
-    model_path,
-    torch_dtype=torch.float16 if device == "cuda" else torch.float32
-).to(device)
-pipe.enable_attention_slicing()
 
 POINTS = []
 
@@ -107,7 +104,7 @@ def merge_voices(voice_paths):
 
 #  VISUALS
 #generate scripts
-def generate_script():
+def generate_script(age_group):
     import json
 
     # ✅ READ POINTS FROM points.txt (not global POINTS)
@@ -117,9 +114,21 @@ def generate_script():
     joined = ". ".join(points)
     print("[DEBUG] Points used for Gemini:", joined)
 
-    # --- Original animation prompt ---
+    # Determine age-based tone
+    if age_group == "6-8":
+        age_tone = "Use VERY simple words, short sentences. Make it playful and fun like you're talking to a small child. Use simple concepts and lots of enthusiasm. Narration should be MAXIMUM 8 words per sentence."
+    elif age_group == "9-10":
+        age_tone = "Use simple but slightly more detailed sentences. Explain clearly with examples. Make it engaging and moderately fun. Narration should be MAXIMUM 12 words per sentence for class 9 to 10."
+    elif age_group == "11-12":
+        age_tone = "Explain clearly like a teacher in a classroom. You can use slightly advanced vocabulary but keep it understandable. Make the content educational and engaging for students in clas 11 and 12 "
+    else:
+        age_tone = "Explain clearly like a teacher in a classroom. You can use slightly advanced vocabulary but keep it understandable. Make the content educational and engaging for college students so make it more clear and use know technology terms as teaching for a college students"
+
+    # --- Original animation prompt with age tone ---
     prompt = f"""
 You are an educational animation script writer.
+
+{age_tone}
 
 Convert the following study material into a short animated script.
 
@@ -161,6 +170,8 @@ Study Material:
     # --- Comic prompt ---
     comic_prompt = f"""
 You are a professional comic writer.
+
+{age_tone}
 
 Based on the following animation content, create a **12-panel comic script**.
 - Each panel should have 1-2 short, punchy sentences.
@@ -233,19 +244,21 @@ def generate_visual_prompts(max_images=5):
     return prompts
 
 def generate_images():
-    print("GENERATING NEW IMAGES...")
+    """
+    Generate images using the local model server
+    Calls HTTP endpoint at MODEL_SERVER_URL/generate
+    """
+    logger.info("[GENERATE_IMAGES] Starting image generation via model server...")
     os.makedirs("static/output/scenes", exist_ok=True)
 
+    # Clear old images
     for f in os.listdir("static/output/scenes"):
         os.remove(os.path.join("static/output/scenes", f))
 
     prompts = generate_visual_prompts()
-
     negative = "realistic photo, portrait, face, people, human face, text, logo, watermark, blurry, low quality"
 
     for i, scene in enumerate(prompts[:5]):
-
-        # ⚠️ YOUR ORIGINAL PROMPT — NOT CHANGED
         prompt = f"""
 colorful storybook illustration of {scene},
 soft cartoon style characters,
@@ -261,16 +274,37 @@ no text,
 masterpiece
 """
 
-        image = pipe(
-            prompt=prompt,
-            negative_prompt=negative,
-            guidance_scale=7,
-            num_inference_steps=35,
-        ).images[0]
-
-        image.save(f"static/output/scenes/{i:03d}.png")
-
-        print(f"[INFO] Image saved: {i:03d}.png")
+        try:
+            logger.info(f"[GENERATE_IMAGES] Generating image {i} from model server...")
+            
+            # Call the model server
+            response = requests.post(
+                f"{MODEL_SERVER_URL}/generate",
+                json={
+                    "prompt": prompt,
+                    "negative_prompt": negative,
+                    "guidance_scale": 7,
+                    "num_inference_steps": 35
+                },
+                timeout=300  # 5 minute timeout for image generation
+            )
+            
+            if response.status_code == 200:
+                # Save the image
+                image_data = response.content
+                with open(f"static/output/scenes/{i:03d}.png", "wb") as f:
+                    f.write(image_data)
+                logger.info(f"[GENERATE_IMAGES] ✅ Image saved: {i:03d}.png")
+            else:
+                logger.error(f"[GENERATE_IMAGES] ❌ Model server error: {response.status_code} - {response.text}")
+                raise Exception(f"Model server error: {response.status_code}")
+        
+        except requests.exceptions.ConnectionError:
+            logger.error(f"[GENERATE_IMAGES] ❌ Cannot connect to model server at {MODEL_SERVER_URL}")
+            raise Exception(f"Cannot reach model server at {MODEL_SERVER_URL}. Is model_server.py running?")
+        except Exception as e:
+            logger.error(f"[GENERATE_IMAGES] ❌ Error generating image {i}: {e}")
+            raise
 
 # ---------------- VIDEO ----------------
 # ---------------- VIDEO ----------------
@@ -390,12 +424,12 @@ def build_video(output_path):
 
     print("[INFO] Final video saved:", output_path)
 # New
-def run_animation(output_path, uploaded_file_path):
+def run_animation(output_path, uploaded_file_path, age_group="11+"):
     # 1️⃣ Process the uploaded file (OCR → NLP)
     process_file(uploaded_file_path)  # This updates POINTS and points.txt
 
-    # 2️⃣ Generate scripts based on new POINTS
-    generate_script()      # Updates script.json
+    # 2️⃣ Generate scripts based on new POINTS and age_group
+    generate_script(age_group)      # Updates script.json
     generate_voice()       # Generates voice.wav
     generate_images()      # Generates new visuals
     build_video(output_path)  # Builds final video
@@ -461,14 +495,16 @@ Study Material:
     print("[INFO] Comic JSON saved with latest points.txt")
     return comic_script
 def run_comic():
+    """Generate comic by calling the model server via HTTP"""
+    logger.info("[RUN_COMIC] Starting comic generation...")
     os.makedirs("static/comic", exist_ok=True)
 
     # 1️⃣ Generate comic JSON from latest points.txt
     comic_script = generate_comic_script()
 
     if not comic_script:
-        print("[ERROR] No comic script to generate images.")
-        return
+        logger.error("[RUN_COMIC] No comic script to generate images.")
+        raise Exception("No comic script generated")
 
     comic_paths = []
     negative_prompt = "anime, cartoon, illustration, painting, text, logo, watermark, blurry, human face, person, people, portrait, face"
@@ -477,7 +513,7 @@ def run_comic():
         narration = scene["narration"]
         visual_prompt = scene["visual"]
 
-        # -------- IMAGE GENERATION --------
+        # -------- IMAGE GENERATION VIA MODEL SERVER --------
         sd_prompt = f"""
 comic style colourful or blackwhite illustration of {visual_prompt},
 storybook style,
@@ -487,40 +523,64 @@ high detail,
 no text,
 comic style no realistic images
 """
-        img = pipe(
-            prompt=sd_prompt,
-            negative_prompt=negative_prompt,
-            guidance_scale=7,
-            num_inference_steps=30
-        ).images[0]
-
-        # -------- ADD TEXT BOX --------
-        draw = ImageDraw.Draw(img)
-        W, H = img.size
-
         try:
-            font = ImageFont.truetype("arial.ttf", 18)
-        except:
-            font = ImageFont.load_default()
+            logger.info(f"[RUN_COMIC] Generating comic panel {idx} via model server...")
+            
+            # Call the model server
+            response = requests.post(
+                f"{MODEL_SERVER_URL}/generate",
+                json={
+                    "prompt": sd_prompt,
+                    "negative_prompt": negative_prompt,
+                    "guidance_scale": 7,
+                    "num_inference_steps": 30
+                },
+                timeout=300  # 5 minute timeout
+            )
+            
+            if response.status_code != 200:
+                logger.error(f"[RUN_COMIC] Model server error: {response.status_code} - {response.text}")
+                raise Exception(f"Model server error: {response.status_code}")
+            
+            # Save the image
+            img = Image.open(BytesIO(response.content))
+            
+            # -------- ADD TEXT BOX --------
+            draw = ImageDraw.Draw(img)
+            W, H = img.size
 
-        wrapped = "\n".join(textwrap.wrap(narration, 42)[:5])
-        box_height = 40 + len(wrapped.split("\n")) * font.getbbox("Ay")[3] + 20
+            try:
+                font = ImageFont.truetype("arial.ttf", 18)
+            except:
+                font = ImageFont.load_default()
 
-        box = Image.new("RGBA", (W, box_height), (255, 255, 255, 170))
-        img.paste(box, (0, H - box_height - 40), box)
+            wrapped = "\n".join(textwrap.wrap(narration, 42)[:5])
+            box_height = 40 + len(wrapped.split("\n")) * font.getbbox("Ay")[3] + 20
 
-        draw.multiline_text(
-            (20, H - box_height - 40 + 20),
-            wrapped,
-            fill="black",
-            font=font
-        )
+            box = Image.new("RGBA", (W, box_height), (255, 255, 255, 170))
+            img.paste(box, (0, H - box_height - 40), box)
 
-        out = f"static/comic/panel_{idx}.png"
-        img.save(out)
-        comic_paths.append(out)
+            draw.multiline_text(
+                (20, H - box_height - 40 + 20),
+                wrapped,
+                fill="black",
+                font=font
+            )
+
+            out = f"static/comic/panel_{idx}.png"
+            img.save(out)
+            comic_paths.append(out)
+            logger.info(f"[RUN_COMIC] ✅ Panel {idx} saved")
+
+        except requests.exceptions.ConnectionError:
+            logger.error(f"[RUN_COMIC] Cannot connect to model server at {MODEL_SERVER_URL}")
+            raise Exception(f"Cannot reach model server at {MODEL_SERVER_URL}. Is model_server.py running?")
+        except Exception as e:
+            logger.error(f"[RUN_COMIC] Error generating panel {idx}: {e}")
+            raise
 
     # -------- COMBINE PANELS INTO COLLAGE --------
+    logger.info("[RUN_COMIC] Creating comic collage...")
     imgs = [Image.open(p) for p in comic_paths]
     w, h = imgs[0].size
     cols = 3
@@ -535,7 +595,7 @@ comic style no realistic images
     final_path = f"static/comic/comic_final.png"
     canvas.save(final_path)
 
-    print("[INFO] Comic collage saved:", final_path)
+    logger.info(f"[RUN_COMIC] ✅ Comic collage saved: {final_path}")
     return final_path
 
 # ---------------- FLOWCHART ----------------

@@ -2002,7 +2002,7 @@
                 <span id="uploadedFileName" style="color: #fff"></span>
               </p>
               <button class="btn btn-primary" style="width: 100%; padding: 14px"
-                onclick="window.location.href='/slider'">
+                onclick="window.location.href='/age'">
                 ⚡ Go to Learning Options
               </button>
             </div>
@@ -2291,7 +2291,7 @@
                     uploadedFilePath = file.name; // save uploaded file
                     const remainingCredits = deductUploadCredit();
                     alert(`✅ "${file.name}" uploaded successfully!\nRemaining credits: ${remainingCredits}`);
-                    window.location.href = "/slider"; // go to learning options
+                    window.location.href = "/age"; // go to age selection
                   } else {
                     alert("Upload failed. Please try again.");
                   }
@@ -2411,7 +2411,7 @@
                   const fileName = uploadedFiles[uploadedFiles.length - 1].name;
                   alert(`✨ Processing "${fileName}"...\n\nPreparing your learning options!`);
                   setTimeout(() => {
-                    window.location.href = "/slider";
+                    window.location.href = "/age";
                   }, 800);
                 }
               }

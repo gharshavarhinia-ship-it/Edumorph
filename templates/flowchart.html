@@ -2039,7 +2039,7 @@ padding:6px;
         const fileName = uploadedFiles[uploadedFiles.length - 1].name;
         alert(`✨ Processing "${fileName}"...\n\nPreparing your learning options!`);
         setTimeout(() => {
-          window.location.href = "/slider";
+          window.location.href = "/age";
         }, 1500);
       }
     }
@@ -2352,13 +2352,11 @@ padding:6px;
       // ensure selects and displays are synced
       setAppLanguage(selectedLanguage || "en");
 
-      // Check for flowchart file in URL parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const file = urlParams.get('file');
+      const file = "{{ file_url|default('')|e }}";
       if (file) {
         const flowchartImage = document.getElementById('flowchartImage');
         if (flowchartImage) {
-          flowchartImage.src = "/static/" + file;
+          flowchartImage.src = file;
           const flowDiv = document.getElementById('flowchartDisplay');
           flowDiv.style.display = 'block';
           flowDiv.style.height = 'auto';

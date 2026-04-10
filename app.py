@@ -1,38 +1,70 @@
 import os
 import glob
 import uuid
+from datetime import datetime, timezone
 import engine
-import mysql.connector
-from mysql.connector import Error
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from werkzeug.utils import secure_filename
-from PIL import Image  # For validating image uploads
+from PIL import Image
+from dotenv import load_dotenv
+from supabase import create_client
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "edumorph_secret"
+
+# ---------------- SUPABASE ----------------
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+
+def extract_public_url(result):
+    if isinstance(result, str):
+        return result
+    if isinstance(result, dict):
+        data = result.get('data') if 'data' in result else result
+        if isinstance(data, dict):
+            return data.get('publicUrl') or data.get('public_url') or data.get('publicURL')
+        return data
+    if hasattr(result, 'data'):
+        data = getattr(result, 'data')
+        if isinstance(data, dict):
+            return data.get('publicUrl') or data.get('public_url') or data.get('publicURL')
+        return data
+    return None
+
+
+def insert_user_library_item(user_id, filename, file_url, content_type):
+    base_data = {
+        "user_id": user_id,
+        "file_name": filename,
+        "file_url": file_url,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    insert_data = {**base_data, "content_type": content_type}
+    print("DB insert data:", insert_data)
+    try:
+        supabase.table("user_library").insert(insert_data).execute()
+        return
+    except Exception as e:
+        err_msg = str(e)
+        print("DB insert failed, retrying with file_type if needed:", err_msg)
+        if "content_type" in err_msg or "Could not find the 'content_type'" in err_msg:
+            fallback_data = {**base_data, "file_type": content_type}
+            print("Fallback DB insert data:", fallback_data)
+            supabase.table("user_library").insert(fallback_data).execute()
+            return
+        raise
 
 # ---------------- CONFIG ----------------
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs('static/output/final_videos', exist_ok=True)  # Ensure output folder exists
-
-# ---------------- DATABASE CONFIG ----------------
-db_config = {
-    "host": "localhost",
-    "user": "root",
-    "password": "tamil",
-    "database": "edumorph"
-}
-
-def get_db_connection():
-    """Returns a new MySQL connection."""
-    try:
-        conn = mysql.connector.connect(**db_config)
-        return conn
-    except Error as e:
-        print(f"Database connection error: {e}")
-        return None
+os.makedirs('static/output/final_videos', exist_ok=True)
 
 # ================= FRONTEND =================
 
@@ -43,42 +75,26 @@ def landing():
 @app.route("/owl")
 def owl():
     return render_template("owl_animation.html")
+
 @app.route("/home")
 def dashboard():
-
     if "user_id" not in session:
         return redirect("/")
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    user_id = session["user_id"]
 
-    # Get user details
-    cursor.execute("""
-        SELECT fname
-        FROM users1
-        WHERE id = %s
-    """, (session["user_id"],))
-    
-    user = cursor.fetchone()
+    # Get user
+    res = supabase.table("profiles").select("*").eq("id", user_id).execute()
+    user = res.data[0] if res.data else None
 
-    # Get total generated contents
-    cursor.execute("""
-        SELECT COUNT(*) AS total
-        FROM user_library
-        WHERE user_id = %s
-    """, (session["user_id"],))
-
-    result = cursor.fetchone()
-    total_generated = result["total"]
+    # Count library
+    res = supabase.table("user_library").select("*", count="exact").eq("user_id", user_id).execute()
+    total_generated = res.count if res.count else 0
 
     goal = 100
     progress = int((total_generated / goal) * 100)
 
-    # Last quiz score (0 if not attempted)
     last_quiz_score = session.get("last_quiz_score", 0)
-
-    cursor.close()
-    conn.close()
 
     return render_template(
         "home1.html",
@@ -94,30 +110,25 @@ def pro():
         return redirect("/")
     return render_template("pro.html")
 
+@app.route("/payment")
+def payment():
+    if "user_id" not in session:
+        return redirect("/")
+    return render_template("payment.html")
+
 @app.context_processor
 def inject_dashboard_data():
     if "user_id" not in session:
         return dict(total_generated=0, progress=0)
 
-    conn = get_db_connection()
-    if not conn:
-        return dict(total_generated=0, progress=0)
+    user_id = session["user_id"]
 
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT COUNT(*) AS total
-        FROM user_library
-        WHERE user_id = %s
-    """, (session["user_id"],))
-    result = cursor.fetchone()
-    total_generated = result["total"] if result else 0
+    res = supabase.table("user_library").select("*", count="exact").eq("user_id", user_id).execute()
+    total_generated = res.count if res.count else 0
+
     goal = 100
     progress = int((total_generated / goal) * 100)
 
-    cursor.close()
-    conn.close()
-
-    # Also include quiz score if needed
     last_quiz_score = session.get("last_quiz_score", 0)
 
     return dict(
@@ -125,137 +136,93 @@ def inject_dashboard_data():
         progress=progress,
         last_quiz_score=last_quiz_score
     )
+
 @app.context_processor
 def inject_user():
     if "user_id" not in session:
         return dict(user=None)
 
-    conn = get_db_connection()
-    if not conn:
-        return dict(user=None)
+    user_id = session["user_id"]
 
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT id, fname, lname, email
-        FROM users1
-        WHERE id = %s
-    """, (session["user_id"],))
-
-    user = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
+    res = supabase.table("profiles").select("*").eq("id", user_id).execute()
+    user = res.data[0] if res.data else None
 
     return dict(user=user)
 
+@app.route("/age")
+def age():
+    if "uploaded_file" not in session:
+        return redirect(url_for("dashboard"))
+    return render_template("age.html")
+
+@app.route("/select_age", methods=["POST"])
+def select_age():
+    age_group = request.form.get("age_group")
+    if age_group in ["6-8", "9-10", "11+"]:
+        session["age_group"] = age_group
+        return redirect(url_for("slider"))
+    return redirect(url_for("age"))
+
 @app.route("/slider")
 def slider():
-    conn = get_db_connection()
-    files = []
-    if conn:
-        try:
-            cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM uploads")
-            files = cursor.fetchall()
-        finally:
-            cursor.close()
-            conn.close()
-
     uploaded_file = session.get("uploaded_file")
     video_file = session.pop("video", None)
     comic_file = session.pop("comic", None)
     flowchart_file = session.pop("flowchart", None)
 
-    
     return render_template(
-        "slider.html", 
-        files=files, 
+        "slider.html",
+        files=[],
         uploaded_file=uploaded_file,
         video=video_file,
         comic=comic_file,
         flowchart=flowchart_file
     )
+
 @app.route("/library")
 def library():
     if "user_id" not in session:
         return redirect("/")
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    user_id = session["user_id"]
 
-    cursor.execute("""
-        SELECT id, title, file_type, file_size, created_at, file_path
-        FROM user_library
-        WHERE user_id = %s
-        ORDER BY created_at DESC
-    """, (session["user_id"],))
+    res = supabase.table("user_library") \
+        .select("*") \
+        .eq("user_id", user_id) \
+        .order("created_at", desc=True) \
+        .execute()
 
-    library_items = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
+    library_items = res.data
 
     return render_template("library.html", library_items=library_items)
-
-
 
 @app.route("/profile")
 def profile():
     if "user_id" not in session:
         return redirect("/")
 
-    conn = get_db_connection()
-    if not conn:
-        return "Database connection failed", 500
+    user_id = session["user_id"]
 
-    cursor = conn.cursor(dictionary=True)
+    res = supabase.table("profiles").select("*").eq("id", user_id).execute()
+    user = res.data[0] if res.data else None
 
-    # ✅ Get user details from users1 table
-    cursor.execute("""
-        SELECT id, fname, lname, email
-        FROM users1
-        WHERE id = %s
-    """, (session["user_id"],))
-    user = cursor.fetchone()
-
-    # ✅ Count total generated items (videos + comics + flowcharts)
-    cursor.execute("""
-        SELECT COUNT(*) AS total
-        FROM user_library
-        WHERE user_id = %s
-    """, (session["user_id"],))
-    result = cursor.fetchone()
-    total_generated = result["total"]
-
-    cursor.close()
-    conn.close()
+    res = supabase.table("user_library").select("*", count="exact").eq("user_id", user_id).execute()
+    total_generated = res.count if res.count else 0
 
     return render_template(
         "user-profile.html",
         user=user,
         total_generated=total_generated
     )
-# -------------------------
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY environment variable is not set!")
+
+# ================= QUIZ =================
 
 @app.route("/quiz")
 def quiz():
     questions = engine.generate_quiz()
-
-    # ✅ DEBUG: check in terminal
-    print("DEBUG /quiz route questions:", questions)
-
     session["quiz_questions"] = questions
     return render_template("quiz.html", questions=questions)
 
-
-
-
-# -------------------------
-# Route to submit quiz answers
-# -------------------------
 @app.route("/submit_quiz", methods=["POST"])
 def submit_quiz():
     questions = session.get("quiz_questions", [])
@@ -265,6 +232,7 @@ def submit_quiz():
         selected = request.form.get(f"q{i}")
         if selected == q["answer"]:
             score += 1
+
     session["last_quiz_score"] = score
     return render_template("quiz.html", questions=questions, score=score)
 
@@ -273,229 +241,174 @@ def submit_quiz():
 @app.route("/register", methods=["POST"])
 def register():
     data = request.json
-    conn = get_db_connection()
-    if not conn:
-        return jsonify({"success": False, "message": "Database connection failed"})
 
     try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users1 WHERE email=%s", (data['email'],))
-        if cursor.fetchone():
-            return jsonify({"success": False, "message": "User already exists"})
-
-        cursor.execute(
-            "INSERT INTO users1 (fname, lname, email, password) VALUES (%s, %s, %s, %s)",
-            (data['firstname'], data['lastname'], data['email'], data['password'])
-        )
-        conn.commit()
-        return jsonify({"success": True, "msg": "Registered Successfully"})
-    except mysql.connector.Error as e:
+        res = supabase.auth.sign_up({
+            "email": data["email"],
+            "password": data["password"]
+        })
+    except Exception as e:
         return jsonify({"success": False, "message": str(e)})
-    finally:
-        cursor.close()
-        conn.close()
+
+    if res.session:
+        supabase.table("profiles").insert({
+            "id": res.user.id,
+            "fname": data["firstname"],
+            "lname": data["lastname"],
+            "email": data["email"]
+        }).execute()
+
+        return jsonify({"success": True, "msg": "Registered Successfully"})
+
+    return jsonify({"success": False, "message": "Signup failed"})
 
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
 
-    if not data or "email" not in data or "password" not in data:
-        return jsonify({"success": False, "message": "Missing email or password"}), 400
+    res = supabase.auth.sign_in_with_password({
+        "email": data["email"],
+        "password": data["password"]
+    })
 
-    conn = get_db_connection()
-    if not conn:
-        return jsonify({"success": False, "message": "Database connection failed"}), 500
+    if res.user:
+        session["user_id"] = res.user.id
+        session["user_email"] = res.user.email
+        return jsonify({"success": True, "msg": "Login Success"})
 
-    try:
-        cursor = conn.cursor(dictionary=True)
+    return jsonify({"success": False, "msg": "Invalid Credentials"}), 401
 
-        cursor.execute(
-            "SELECT * FROM users1 WHERE email=%s AND password=%s",
-            (data['email'], data['password'])
-        )
-
-        user = cursor.fetchone()
-
-        if user:
-            # ✅ STORE USER SESSION (VERY IMPORTANT)
-            session["user_id"] = user["id"]
-            session["user_email"] = user["email"]
-            session["user_name"] = user["fname"]
-
-            return jsonify({
-                "success": True,
-                "msg": "Login Success"
-            })
-
-        return jsonify({
-            "success": False,
-            "msg": "Invalid Credentials"
-        }), 401
-
-    except Exception as e:
-        return jsonify({
-            "success": False,
-            "message": str(e)
-        }), 500
-
-    finally:
-        cursor.close()
-        conn.close()
-
-# ================= FRONTEND UPLOAD =================
+# ================= UPLOAD =================
 
 @app.route("/home/upload", methods=["POST"])
 def home_upload():
-
     file = request.files["file"]
 
-    # Validate uploaded file is an image
     try:
         img = Image.open(file)
         img.verify()
     except Exception as e:
-        return f"Uploaded file is not a valid image: {str(e)}", 400
+        return f"Invalid image: {str(e)}", 400
 
-    # Make filename safe and unique
     safe_filename = secure_filename(file.filename)
     unique_filename = f"{uuid.uuid4().hex}_{safe_filename}"
 
-    # Save original file
     filepath = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
     file.seek(0)
     file.save(filepath)
-    
 
-
-    # Process using engine with the actual uploaded file
     engine.process_file(filepath)
 
-    # Store uploaded filename in Flask session
     session["uploaded_file"] = unique_filename
 
-    # Redirect back to slider page
-    return redirect(url_for("slider"))
+    return redirect(url_for("age"))
 
-
-# ================= BACKEND GENERATION =================
+# ================= GENERATION =================
 
 @app.route("/animate", methods=["POST"])
 def animate():
     if "user_id" not in session or "uploaded_file" not in session:
         return redirect("/home")
 
+    user_id = session["user_id"]
+
     uploaded_file_path = os.path.join(
         app.config["UPLOAD_FOLDER"], session["uploaded_file"]
     )
 
-    video_id = uuid.uuid4().hex
-    filename = f"final_{video_id}.mp4"
+    filename = f"{uuid.uuid4().hex}.mp4"
     out_path = os.path.join("static/output/final_videos", filename)
 
-    # ✅ Pass uploaded file path
-    engine.run_animation(out_path, uploaded_file_path)
+    age_group = session.get("age_group", "11+")
 
-    db_path = f"output/final_videos/{filename}"
+    engine.run_animation(out_path, uploaded_file_path, age_group)
 
-    # Save generated video to database
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO user_library
-        (user_id, title, file_type, file_size, file_path)
-        VALUES (%s, %s, %s, %s, %s)
-    """, (session["user_id"], "Generated Animation", "MP4", "0", db_path))
-    conn.commit()
-    cursor.close()
-    conn.close()
+    # Upload to Supabase
+    storage_path = f"{user_id}/{filename}"
+    print(f"Uploading file to Supabase path: {storage_path}")
+    with open(out_path, "rb") as f:
+        upload_result = supabase.storage.from_("user-files").upload(storage_path, f)
 
-    return redirect(f"/animation?file={db_path}")
+    public_url = extract_public_url(
+        supabase.storage.from_("user-files").get_public_url(storage_path)
+    )
+    print(f"Public URL: {public_url}")
+
+    insert_user_library_item(user_id, filename, public_url, "animation")
+
+    return redirect(url_for("animation_page", file=public_url))
 
 @app.route("/comic", methods=["POST"])
 def comic():
-
     if "user_id" not in session:
         return redirect("/")
+
+    user_id = session["user_id"]
 
     path = engine.run_comic()
-
     filename = os.path.basename(path)
-    db_path = f"comic/{filename}"
+    storage_path = f"{user_id}/{filename}"
+    print(f"Uploading file to Supabase path: {storage_path}")
+    with open(path, "rb") as f:
+        supabase.storage.from_("user-files").upload(storage_path, f)
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    public_url = extract_public_url(
+        supabase.storage.from_("user-files").get_public_url(storage_path)
+    )
+    print(f"Public URL: {public_url}")
 
-    cursor.execute("""
-        INSERT INTO user_library
-        (user_id, title, file_type, file_size, file_path)
-        VALUES (%s, %s, %s, %s, %s)
-    """, (
-        session["user_id"],
-        "Generated Comic",
-        "PDF",
-        "0",
-        db_path
-    ))
+    insert_user_library_item(user_id, filename, public_url, "comic")
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+    return redirect(url_for("comic_page", file=public_url))
 
-    return redirect(f"/comic?file={db_path}")
 @app.route("/flowchart", methods=["POST"])
 def flowchart():
-
     if "user_id" not in session:
         return redirect("/")
 
+    user_id = session["user_id"]
+
     path = engine.run_flowchart()
-
     filename = os.path.basename(path)
-    db_path = f"flowchart/{filename}"
+    storage_path = f"{user_id}/{filename}"
+    print(f"Uploading file to Supabase path: {storage_path}")
+    with open(path, "rb") as f:
+        supabase.storage.from_("user-files").upload(storage_path, f)
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    public_url = extract_public_url(
+        supabase.storage.from_("user-files").get_public_url(storage_path)
+    )
+    print(f"Public URL: {public_url}")
 
-    cursor.execute("""
-        INSERT INTO user_library
-        (user_id, title, file_type, file_size, file_path)
-        VALUES (%s, %s, %s, %s, %s)
-    """, (
-        session["user_id"],
-        "Generated Flowchart",
-        "PNG",
-        "0",
-        db_path
-    ))
+    insert_user_library_item(user_id, filename, public_url, "flowchart")
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+    return redirect(url_for("flowchart_page", file=public_url))
 
-    return redirect(f"/flowchart?file={db_path}")
-
+# ================= PAGES =================
 
 @app.route("/animation")
 def animation_page():
     if "user_id" not in session:
         return redirect("/")
-    return render_template("animation.html")
+    file_url = request.args.get("file") or session.pop("last_generated_url", None)
+    return render_template("animation.html", file_url=file_url)
 
 @app.route("/comic")
 def comic_page():
     if "user_id" not in session:
         return redirect("/")
-    return render_template("comic.html")
+    file_url = request.args.get("file") or session.pop("last_generated_url", None)
+    return render_template("comic.html", file_url=file_url)
 
 @app.route("/flowchart")
 def flowchart_page():
     if "user_id" not in session:
         return redirect("/")
-    return render_template("flowchart.html")
-
+    file_url = request.args.get("file") or session.pop("last_generated_url", None)
+    return render_template("flowchart.html", file_url=file_url)
 
 # ================= RUN =================
 
 if __name__ == "__main__":
-    
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
