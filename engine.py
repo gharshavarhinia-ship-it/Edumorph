@@ -10,7 +10,7 @@ import numpy as np
 import pyttsx3
 import textwrap 
 import spacy
-import google.genai as genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 from moviepy.editor import AudioFileClip, ImageClip, concatenate_videoclips, CompositeVideoClip
 from io import BytesIO
