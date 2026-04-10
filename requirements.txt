@@ -1,20 +1,35 @@
-flask==3.0.3
-gunicorn==22.0.0
-werkzeug==3.0.3
+# Core Web Framework
+Flask
+gunicorn
+Werkzeug
 
-numpy==1.26.4
-pillow==10.3.0
-pytesseract==0.3.10
-pyttsx3==2.90
+# Image Processing
+numpy
+Pillow
+pytesseract
+pyttsx3
 
-spacy==3.7.5
+# NLP
+spacy
 
-google-generativeai==0.7.2
+# AI & APIs
+google-generativeai
 
-python-dotenv==1.0.1
-moviepy==1.0.3
-imageio==2.34.1
-imageio-ffmpeg==0.4.9
+# Configuration
+python-dotenv
 
-requests==2.31.0
-supabase==2.4.1
+# Video & Media
+moviepy
+imageio
+imageio-ffmpeg
+
+# HTTP & Database
+requests
+supabase
+
+# ML & Image Generation (Model Server)
+diffusers
+transformers
+accelerate
+safetensors
+torch
